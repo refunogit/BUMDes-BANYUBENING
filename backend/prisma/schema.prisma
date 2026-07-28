@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+}
+
+enum PengurusRole {
+  DIREKTUR
+  SEKRETARIS_1
+  SEKRETARIS_2
+  BENDAHARA
+  MANAGER_JASA
+  MANAGER_PRODUKSI
+  MANAGER_PERDAGANGAN
+  STAFF
+}
+
+enum CoaType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  VOIDED
+}
+
+enum ThemeType {
+  DEFAULT
+  INDEPENDENCE_DAY
+  CHINESE_NEW_YEAR
+  RAMADAN_EID
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  password      String
+  role          UserRole @default(ADMIN)
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  journals      Journal[] @relation("JournalAuthor")
+  auditLogs     AuditLog[]
+  notifications Notification[]
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  isSecret  Boolean  @default(false)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model Identity {
+  id          String   @id @default(cuid())
+  name        String   @default("BUMDes BANYUBENING")
+  shortName   String   @default("BUMDes")
+  description String?  @db.Text
+  logoUrl     String?
+  faviconUrl  String?
+  address     String?  @db.Text
+  phone       String?
+  email       String?
+  website     String?
+  villageName String?
+  district    String?
+  regency     String?
+  province    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?  @db.Text
+  content     String   @db.Text
+  coverImage  String?
+  author      String?
+  category    String?  @default("Umum")
+  tags        String[]
+  isPublished Boolean  @default(true)
+  views       Int      @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model ProgramKerja {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  category    String?  @default("Umum")
+  status      String   @default("PLANNED") // PLANNED, ONGOING, COMPLETED
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal? @db.Decimal(15,2)
+  progress    Int      @default(0)
+  coverImage  String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model RunningText {
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  emoji     String?  @default("📢")
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  speed     Int      @default(30) // seconds
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pengurus {
+  id        String       @id @default(cuid())
+  name      String
+  role      PengurusRole
+  roleLabel String
+  photoUrl  String?
+  bio       String?      @db.Text
+  order     Int          @default(0)
+  isActive  Boolean      @default(true)
+  phone     String?
+  email     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model CarouselItem {
+  id        String   @id @default(cuid())
+  title     String?
+  imageUrl  String
+  linkUrl   String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @db.Text
+  shortDesc   String?  @db.Text
+  price       Decimal  @db.Decimal(15,2)
+  discountPrice Decimal? @db.Decimal(15,2)
+  stock       Int      @default(0)
+  sku         String?  @unique
+  category    String   @default("Umum")
+  weight      Float?   // gram
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  views       Int      @default(0)
+  soldCount   Int      @default(0)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images      ProductImage[]
+  @@index([slug])
+  @@index([category])
+  @@index([isActive])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  isPrimary Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  coverImage  String?
+  images      String[]
+  category    String?  @default("Umum")
+  clientName  String?
+  projectDate DateTime?
+  linkUrl     String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Coa {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  type          CoaType
+  normalBalance String   @default("DEBIT") // DEBIT or CREDIT
+  parentId      String?
+  level         Int      @default(1)
+  isActive      Boolean  @default(true)
+  description   String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  parent        Coa?     @relation("CoaHierarchy", fields: [parentId], references: [id])
+  children      Coa[]    @relation("CoaHierarchy")
+  entries       JournalEntry[]
+
+  @@index([code])
+  @@index([type])
+}
+
+model Journal {
+  id              String        @id @default(cuid())
+  journalNo       String        @unique
+  transactionDate DateTime      @default(now())
+  description     String        @db.Text
+  reference       String?
+  status          JournalStatus @default(DRAFT)
+  totalDebit      Decimal       @db.Decimal(15,2) @default(0)
+  totalCredit     Decimal       @db.Decimal(15,2) @default(0)
+  createdById     String?
+  postedAt        DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  createdBy       User?         @relation("JournalAuthor", fields: [createdById], references: [id])
+  entries         JournalEntry[]
+
+  @@index([journalNo])
+  @@index([transactionDate])
+  @@index([status])
+}
+
+model JournalEntry {
+  id          String   @id @default(cuid())
+  journalId   String
+  coaId       String
+  debit       Decimal  @db.Decimal(15,2) @default(0)
+  credit      Decimal  @db.Decimal(15,2) @default(0)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  journal     Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  coa         Coa      @relation(fields: [coaId], references: [id])
+
+  @@index([journalId])
+  @@index([coaId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, etc
+  entity    String   // Table name
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) // immutable, never updated
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([entity])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model WhatsappConfig {
+  id          String   @id @default(cuid())
+  phoneNumber String
+  apiKey      String?  @db.Text
+  apiUrl      String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WhatsappLog {
+  id          String   @id @default(cuid())
+  to          String
+  message     String   @db.Text
+  status      String   @default("PENDING") // PENDING, SENT, FAILED, RETRY
+  retries     Int      @default(0)
+  response    String?  @db.Text
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([to])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  title     String
+  message   String   @db.Text
+  type      String   @default("INFO") // INFO, WARNING, SUCCESS, ERROR
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model ThemeConfig {
+  id        String    @id @default(cuid())
+  type      ThemeType @unique
+  name      String
+  isActive  Boolean   @default(false)
+  primaryColor String @default("#0ea5e9")
+  secondaryColor String @default("#0284c7")
+  accentColor String @default("#f97316")
+  config    Json?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BackupLog {
+  id        String   @id @default(cuid())
+  fileName  String
+  filePath  String?
+  fileSize  Int?
+  status    String   @default("SUCCESS") // SUCCESS, FAILED
+  type      String   @default("AUTO") // AUTO, MANUAL
+  createdAt DateTime @default(now())
+}
