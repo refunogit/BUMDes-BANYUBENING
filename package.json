@@ -1,0 +1,39 @@
+{
+  "name": "bumdes-banyubening-platform",
+  "version": "1.0.0",
+  "description": "Enterprise-Grade BUMDes Banyubening Platform (Admin Dashboard, Public Website, Program Kerja, WhatsApp Integrated Systems, Reporting, Realtime & DevOps)",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "public-app",
+    "admin-app"
+  ],
+  "scripts": {
+    "postinstall": "node backend/scripts/generate.js",
+    "build": "npm run build --workspaces",
+    "build:backend": "npm run build -w backend",
+    "build:public": "npm run build -w public-app",
+    "build:admin": "npm run build -w admin-app",
+    "test": "npm run test -w backend",
+    "test:all": "npm run test -w backend",
+    "start": "concurrently -k -n \"backend,public,admin\" -c \"blue,green,yellow\" \"npm run start:backend\" \"npm run start:public\" \"npm run start:admin\"",
+    "start:apps": "concurrently -k -n \"public,admin\" -c \"green,yellow\" \"npm run start:public\" \"npm run start:admin\"",
+    "start:backend": "npm run start -w backend",
+    "start:public": "npm run start -w public-app",
+    "start:admin": "npm run start -w admin-app",
+    "dev": "concurrently -k -n \"backend,public,admin\" -c \"blue,green,yellow\" \"npm run dev:backend\" \"npm run dev:public\" \"npm run dev:admin\"",
+    "dev:apps": "concurrently -k -n \"public,admin\" -c \"green,yellow\" \"npm run dev:public\" \"npm run dev:admin\"",
+    "dev:all": "npm run dev",
+    "dev:backend": "npm run dev -w backend",
+    "dev:public": "npm run dev -w public-app",
+    "dev:admin": "npm run dev -w admin-app",
+    "seed": "npm run seed -w backend",
+    "db:push": "npm run db:push -w backend",
+    "setup:env": "node -e \"const fs=require('fs'); fs.copyFileSync('.env.example','.env'); fs.copyFileSync('.env.example','backend/.env'); console.log('✅ File .env dan backend/.env berhasil dibuat!')\""
+  },
+  "author": "Senior Principal Fullstack Engineering System",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}

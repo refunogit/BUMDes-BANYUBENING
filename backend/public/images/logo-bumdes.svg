@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B7A57"/>
+      <stop offset="100%" stop-color="#2D5A40"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7091E6"/>
+      <stop offset="100%" stop-color="#EBF4F6"/>
+    </linearGradient>
+  </defs>
+  <!-- Circle Logo Emblem -->
+  <circle cx="60" cy="60" r="48" fill="url(#grad)"/>
+  <circle cx="60" cy="60" r="42" fill="#EBF4F6" stroke="#FFD23F" stroke-width="3"/>
+  <!-- Mountain & Spring Water Graphic inside emblem -->
+  <path d="M30 78 L55 35 L75 62 L85 45 L95 78 Z" fill="#3B7A57"/>
+  <path d="M45 78 C55 65, 65 65, 75 78 C80 85, 40 85, 45 78 Z" fill="url(#water)"/>
+  <!-- Text Brand -->
+  <text x="125" y="55" font-family="'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="bold" fill="#3B7A57">BUMDes</text>
+  <text x="125" y="85" font-family="'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" fill="#2E4A3B">BANYUBENING</text>
+</svg>

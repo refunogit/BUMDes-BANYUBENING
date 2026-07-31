@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <rect width="300" height="300" fill="#FFFBE6" rx="24"/>
+  <circle cx="150" cy="140" r="70" fill="#FFD23F" opacity="0.4"/>
+  <rect x="110" y="90" width="80" height="110" rx="20" fill="#FFB800" stroke="#E25858" stroke-width="3"/>
+  <text x="150" y="150" font-family="sans-serif" font-size="16" font-weight="bold" fill="#FFF" text-anchor="middle">MADU HUTAN</text>
+  <text x="150" y="260" font-family="sans-serif" font-size="18" font-weight="bold" fill="#3B7A57" text-anchor="middle">Lereng Gunung</text>
+</svg>
