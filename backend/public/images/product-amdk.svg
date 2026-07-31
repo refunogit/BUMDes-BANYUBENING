@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <rect width="300" height="300" fill="#EBF4F6" rx="24"/>
+  <circle cx="150" cy="140" r="70" fill="#7091E6" opacity="0.3"/>
+  <path d="M135 70 L165 70 L165 85 L135 85 Z" fill="#3B7A57"/>
+  <rect x="125" y="85" width="50" height="150" rx="15" fill="#FFFFFF" stroke="#7091E6" stroke-width="4"/>
+  <path d="M125 140 L175 140 L175 190 L125 190 Z" fill="#3B7A57" opacity="0.8"/>
+  <text x="150" y="170" font-family="sans-serif" font-size="14" font-weight="bold" fill="#FFF" text-anchor="middle">AIR BENING</text>
+  <text x="150" y="260" font-family="sans-serif" font-size="18" font-weight="bold" fill="#3B7A57" text-anchor="middle">AMDK 600ml</text>
+</svg>

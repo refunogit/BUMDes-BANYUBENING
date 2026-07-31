@@ -1,0 +1,202 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:../dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "wasm"
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  pinHash      String
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Identity {
+  id                String   @id @default(uuid())
+  name              String
+  villageName       String
+  logoUrl           String
+  faviconUrl        String
+  heroBackgroundUrl String
+  address           String
+  phone             String
+  email             String
+  description       String
+  mapsEmbedUrl      String?  @default("")
+  updatedAt         DateTime @updatedAt
+}
+
+model ThemeSetting {
+  id             String    @id @default(uuid())
+  activeTheme    String    @default("NORMAL") // NORMAL, KEMERDEKAAN, RAMADAN, IMLEK, NATAL, TAHUN_BARU
+  isAutoSchedule Boolean   @default(false)
+  scheduledStart DateTime?
+  scheduledEnd   DateTime?
+  updatedAt      DateTime  @updatedAt
+}
+
+model ProgramKerja {
+  id               String              @id @default(uuid())
+  title            String
+  date             String
+  teamName         String
+  isCommentEnabled Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  blocks           ProgramKerjaBlock[]
+  comments         Comment[]
+}
+
+model ProgramKerjaBlock {
+  id             String       @id @default(uuid())
+  programKerjaId String
+  type           String       // 'text' | 'image'
+  content        String
+  orderIndex     Int          @default(0)
+  programKerja   ProgramKerja @relation(fields: [programKerjaId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id             String       @id @default(uuid())
+  programKerjaId String
+  name           String
+  email          String
+  text           String
+  createdAt      DateTime     @default(now())
+  isApproved     Boolean      @default(true)
+  parentId       String?
+  parent         Comment?     @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        Comment[]    @relation("CommentToComment")
+  programKerja   ProgramKerja @relation(fields: [programKerjaId], references: [id], onDelete: Cascade)
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  summary     String
+  content     String
+  coverImage  String
+  category    String
+  publishedAt DateTime @default(now())
+  author      String
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  category      String
+  price         Float
+  stock         Int      @default(100)
+  description   String
+  coverImage    String
+  galleryImages String   // JSON array string
+  unitName      String   @default("pcs")
+  rating        Float    @default(5.0)
+  soldCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Pengurus {
+  id         String   @id @default(uuid())
+  name       String
+  role       String   // Direktur, Sekretaris 1, Sekretaris 2, Bendahara, Manager Jasa, Manager Produksi, Manager Perdagangan, etc.
+  photoUrl   String
+  bio        String?
+  orderIndex Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model RunningText {
+  id         String   @id @default(uuid())
+  text       String
+  category   String   // 'FINANCIAL' | 'TRAINING' | 'BUSINESS' | 'GENERAL'
+  isActive   Boolean  @default(true)
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model UnitUsaha {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String
+  coverImage    String
+  manager       String
+  contact       String
+  contentBlocks String   // JSON array of {type, content}
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Portfolio {
+  id          String   @id @default(uuid())
+  title       String
+  category    String
+  description String
+  imageUrl    String
+  date        String
+  createdAt   DateTime @default(now())
+}
+
+model PengaduanMessage {
+  id           String   @id @default(uuid())
+  senderNumber String
+  senderName   String
+  message      String
+  direction    String   // 'INCOMING' | 'OUTGOING'
+  status       String   @default("UNREAD") // 'UNREAD' | 'READ' | 'REPLIED'
+  timestamp    DateTime @default(now())
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String?
+  performedBy String
+  details     String   // JSON string
+  timestamp   DateTime @default(now())
+}
+
+model BackupLog {
+  id                String   @id @default(uuid())
+  filename          String
+  fileSize          Int
+  status            String   // 'SUCCESS' | 'FAILED'
+  googleDriveFileId String?
+  createdAt         DateTime @default(now())
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  email     String
+  phone     String
+  code      String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model RateLimitEntry {
+  id        String   @id @default(uuid())
+  ip        String   @unique
+  attempts  Int      @default(0)
+  lockUntil DateTime?
+  createdAt DateTime @default(now())
+}

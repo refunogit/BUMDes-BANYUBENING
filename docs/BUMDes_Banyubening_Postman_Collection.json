@@ -1,0 +1,235 @@
+{
+  "info": {
+    "_postman_id": "bumdes-banyubening-enterprise-2026",
+    "name": "BUMDes Banyubening Enterprise Platform API",
+    "description": "Koleksi resmi pengujian API BUMDes Banyubening - Otentikasi 2FA, Fonnte Webhook, Kontrol Internal, dan Situs Publik.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health & Status Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "2. Auth 2FA Step 1 - Login Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@bumdesbanyubening.id\",\n  \"password\": \"BanyuBening2026!\",\n  \"turnstileToken\": \"demo_turnstile_token\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/gerbang-internal-bumdes/login-email",
+          "host": ["{{baseUrl}}"],
+          "path": ["gerbang-internal-bumdes", "login-email"]
+        }
+      }
+    },
+    {
+      "name": "3. Auth 2FA Step 2 - Verify OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@bumdesbanyubening.id\",\n  \"otpCode\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/gerbang-internal-bumdes/verify-otp",
+          "host": ["{{baseUrl}}"],
+          "path": ["gerbang-internal-bumdes", "verify-otp"]
+        }
+      }
+    },
+    {
+      "name": "4. Auth 2FA Step 3 - Verify 10-Digit PIN",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"otpSessionToken\": \"{{otpSessionToken}}\",\n  \"pin\": \"1234567890\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/gerbang-internal-bumdes/verify-pin",
+          "host": ["{{baseUrl}}"],
+          "path": ["gerbang-internal-bumdes", "verify-pin"]
+        }
+      }
+    },
+    {
+      "name": "5. Get Identity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/identity",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "identity"]
+        }
+      }
+    },
+    {
+      "name": "6. Get Active Holiday Theme",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/theme/active",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "theme", "active"]
+        }
+      }
+    },
+    {
+      "name": "7. Get Program Kerja List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/program-kerja",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "program-kerja"]
+        }
+      }
+    },
+    {
+      "name": "8. Add Comment to Program Kerja",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Warga Tester\",\n  \"email\": \"warga.test@banyubening.id\",\n  \"text\": \"Program air bersih sangat luar biasa!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/program-kerja/{{programId}}/comments",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "program-kerja", "{{programId}}", "comments"]
+        }
+      }
+    },
+    {
+      "name": "9. Fonnte Webhook - WhatsApp Chat & Bot Command (#info)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender\": \"081234567899\",\n  \"name\": \"Pak Budi Warga\",\n  \"message\": \"#info\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/pengaduan/webhook",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "pengaduan", "webhook"]
+        }
+      }
+    },
+    {
+      "name": "10. Get Products Catalog",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      }
+    },
+    {
+      "name": "11. Get Pengurus (The Floating Leaf)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/pengurus",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "pengurus"]
+        }
+      }
+    },
+    {
+      "name": "12. Get Running Text Ticker",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/running-text",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "running-text"]
+        }
+      }
+    },
+    {
+      "name": "13. Unified Search",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/search?q=air",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "search"],
+          "query": [
+            { "key": "q", "value": "air" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. Admin - Get Audit Logs",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/audit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "audit"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "YOUR_ACCESS_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "otpSessionToken",
+      "value": "YOUR_OTP_SESSION_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "programId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EBF4F6"/>
+      <stop offset="60%" stop-color="#C5E3EA"/>
+      <stop offset="100%" stop-color="#3B7A57"/>
+    </linearGradient>
+    <linearGradient id="mt1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4F7942"/>
+      <stop offset="100%" stop-color="#2D5A40"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="600" fill="url(#bg)"/>
+  <!-- Mountains -->
+  <polygon points="0,600 350,220 700,600" fill="url(#mt1)" opacity="0.8"/>
+  <polygon points="500,600 900,180 1350,600" fill="#3B7A57" opacity="0.9"/>
+  <polygon points="1000,600 1250,300 1440,600" fill="#2D5A40"/>
+  <!-- Mountain Spring Stream -->
+  <path d="M700 380 Q750 450, 680 500 T720 600 L850 600 Q800 500, 850 450 T780 380 Z" fill="#7091E6" opacity="0.8"/>
+  <!-- Decorative Dew Glows -->
+  <circle cx="200" cy="150" r="40" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="1200" cy="120" r="60" fill="#FFFFFF" opacity="0.3"/>
+</svg>
