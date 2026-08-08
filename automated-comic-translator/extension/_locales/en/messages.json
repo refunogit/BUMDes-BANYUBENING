@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Automated Comic Translator",
+    "description": "Extension name shown in the Chrome toolbar and extensions page."
+  },
+  "extDescription": {
+    "message": "One-click in-place comic translation via PaddleOCR, LaMa inpainting and automatic text rendering backed by a local FastAPI server.",
+    "description": "Extension description shown in the Chrome extensions page."
+  }
+}
