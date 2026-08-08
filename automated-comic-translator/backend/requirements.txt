@@ -1,0 +1,48 @@
+# =============================================================================
+# Automated Comic Translator - Backend dependencies
+# Install with:  pip install -r requirements.txt
+# =============================================================================
+
+# --- Web framework -----------------------------------------------------------
+fastapi>=0.111,<1.0
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9          # required by FastAPI form handling
+
+# --- Configuration ------------------------------------------------------------
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# --- Imaging -----------------------------------------------------------------
+pillow>=10.3
+opencv-python>=4.9
+numpy>=1.26,<3
+
+# --- OCR (PaddleOCR) ----------------------------------------------------------
+# NOTE: PaddleOCR needs a matching PaddlePaddle backend wheel. For Linux CPU:
+#   pip install paddlepaddle==2.6.1
+# For CUDA builds refer to https://www.paddlepaddle.org.cn/ .
+# The versions below are a starting point; follow PaddleOCR's official
+# install docs if the wheel compatibility check fails.
+paddlepaddle>=2.6.1
+paddleocr>=2.7.3
+
+# --- Inpainting (LaMa) -------------------------------------------------------
+# Pulls in torch automatically. Prefer the CPU build for lightweight setups:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# ONNX (quantized, faster on CPU) alternative - uncomment to use:
+# simple-lama-inpainting  (PyTorch backend, default)
+# onnxruntime>=1.18        (optional ONNX execution provider)
+
+# --- Translation --------------------------------------------------------------
+deep-translator>=1.11.4
+
+# =============================================================================
+# OPTIONAL performance optimisations
+# -----------------------------------------------------------------------------
+# To keep VRAM bounded / speed up CPU inpainting:
+#   1. Install torch CPU wheels (see above).
+#   2. Set DEVICE=cpu in .env, or DEVICE=cuda if you have a GPU.
+#   3. For ONNX Runtime INT8 inference, add:
+#        onnxruntime-gpu>=1.18
+#      and export the quantized LaMa model into backend/models/.
+# =============================================================================

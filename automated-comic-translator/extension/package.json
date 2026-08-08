@@ -1,0 +1,19 @@
+{
+  "name": "automated-comic-translator-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Manifest V3 + TypeScript Chrome extension for the Automated Comic Translator.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build && vite build -c vite.content.config.ts && vite build -c vite.background.config.ts",
+    "build:only": "vite build && vite build -c vite.content.config.ts && vite build -c vite.background.config.ts",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

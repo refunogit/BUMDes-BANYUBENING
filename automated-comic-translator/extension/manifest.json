@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Automated Comic Translator",
+  "version": "1.0.0",
+  "description": "One-click in-place comic translation: PaddleOCR + LaMa inpainting + automatic text rendering via a local FastAPI backend.",
+  "default_locale": "en",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "http://localhost:5000/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Automated Comic Translator"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/content.js"
+      ],
+      "css": [
+        "content/overlay.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
