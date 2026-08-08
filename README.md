@@ -129,6 +129,8 @@ automated-comic-translator/
 │       │   └── popup.css
 │       └── utils/
 │           └── api.ts                 # HTTP client wrapper for the backend
+├── install.sh                          # ONE-command installer (backend + extension)
+├── run.sh                              # ONE-command runner (build + start backend)
 └── README.md
 ```
 
@@ -258,23 +260,55 @@ The content script reacts to storage changes instantly (no reload needed).
 
 ## 📖 Cara Penggunaan (Usage Guide)
 
+> **One-command install & run.** Dua skrip bantu disediakan di
+> `automated-comic-translator/` agar instalasi dan menjalankan seluruh proyek
+> (backend + extension) cukup **satu perintah** masing-masing.
+
 ### 1. Menjalankan Sistem
 
+**Instalasi (sekali saja):**
 ```bash
-# Terminal 1 — backend
-cd backend && source .venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd automated-comic-translator
+./install.sh          # setup backend venv + deps, npm install, .env
 ```
 
+**Menjalankan semuanya (frontend + backend):**
 ```bash
-# Terminal 2 — build the extension (once), then load unpacked from dist/
-cd extension && npm run build
+./run.sh              # build extension, lalu jalankan backend FastAPI
 ```
 
-Load `extension/dist/` in `chrome://extensions` (see Setup above) and open any
-page containing comic/manga images.
+Opsi `./run.sh`:
 
-### 2. Penerjemahan Komik di Browser
+| Perintah | Fungsi |
+|---|---|
+| `./run.sh` | Build extension (sekali) + jalankan backend di foreground. |
+| `./run.sh --watch` | Build extension sekali, lalu *watch* (rebuild otomatis saat edit) + jalankan backend. |
+| `./run.sh --build-only` | Hanya build extension ke `extension/dist/` (tanpa menjalankan server). |
+
+Setelah `./run.sh`, server berjalan di `http://localhost:8000` (dokumen API di
+`/docs`, cek kesehatan di `/health`). Stop dengan `Ctrl+C`.
+
+> Tanpa skrip (manual) — setara dengan `./run.sh`:
+> ```bash
+> cd backend && source .venv/bin/activate
+> uvicorn app.main:app --host 0.0.0.0 --port 8000
+> ```
+> ```bash
+> cd extension && npm run build
+> ```
+
+### 2. Memuat Extension di Chrome
+
+Build extension dengan `./run.sh` (atau `--build-only`), lalu:
+
+1. Buka `chrome://extensions`.
+2. Aktifkan **Developer mode** (toggle, kanan atas).
+3. Klik **Load unpacked** dan pilih folder `extension/dist/`.
+4. (Opsional) Sematkan ikon ekstensi ke toolbar.
+
+Buka halaman komik/manga, lalu lanjut ke panduan penerjemahan di bawah.
+
+### 3. Penerjemahan Komik di Browser
 
 1. Open a comic page in your browser (a manga reader, image board, etc.).
 2. Hover over a comic image — a blue **Translate** button floats over it.
