@@ -13,6 +13,7 @@ To dodge free-web-API rate limiting (HTTP 429) the service:
 from __future__ import annotations
 
 import logging
+import re
 
 from app.config import settings
 
@@ -70,7 +71,7 @@ def translate_batch(texts: list[str], target: str,
     translated: list[str] = []
 
     if settings.ENABLE_BATCH_TRANSLATION:
-        batch = settings.BATCH_DELIMITER.join(non_empty)
+        batch = settings.batch_delimiter.join(non_empty)
         for provider in chain:
             try:
                 out = _translate_single(batch, source, target, provider)
@@ -114,9 +115,28 @@ def translate_batch(texts: list[str], target: str,
 
 def _split_batch(output: str, expected: int) -> list[str]:
     """Split a batched translation back into lines of the expected count."""
-    parts = [p for p in output.split(settings.BATCH_DELIMITER) if p]
-    # Delimiter may survive translation with surrounding whitespace variants.
-    if len(parts) != expected:
-        parts = output.split("\n")
-        parts = [p for p in parts if p.strip()]
-    return parts
+    candidates = [
+        settings.batch_delimiter,
+        settings.BATCH_DELIMITER,
+        "\n-----\n",
+        "-----",
+    ]
+
+    for delimiter in dict.fromkeys(candidates):
+        if not delimiter:
+            continue
+        parts = [p.strip() for p in output.split(delimiter) if p.strip()]
+        if len(parts) == expected:
+            return parts
+
+    # Some providers preserve only the dashed separator line but change spacing.
+    parts = [p.strip() for p in re.split(r"\n\s*-{3,}\s*\n", output) if p.strip()]
+    if len(parts) == expected:
+        return parts
+
+    # Last resort: plain line split, but only accept it if it matches the count.
+    parts = [p.strip() for p in output.splitlines() if p.strip()]
+    if len(parts) == expected:
+        return parts
+
+    return [output.strip()] if output.strip() else []

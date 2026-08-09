@@ -93,5 +93,20 @@ class Settings(BaseSettings):
     def fallback_providers(self) -> list[str]:
         return [p.strip() for p in self.TRANSLATOR_FALLBACKS.split(",") if p.strip()]
 
+    @property
+    def batch_delimiter(self) -> str:
+        """Return the batch delimiter with common escape sequences resolved.
+
+        This lets `.env` safely store values like ``\n-----\n`` while runtime
+        code still receives actual newline characters.
+        """
+        raw = self.BATCH_DELIMITER
+        if "\\" not in raw:
+            return raw
+        try:
+            return raw.encode("utf-8").decode("unicode_escape")
+        except UnicodeDecodeError:
+            return raw
+
 
 settings = Settings()
