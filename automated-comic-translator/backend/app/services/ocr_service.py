@@ -17,6 +17,7 @@ accuracy on manga speech bubbles.
 from __future__ import annotations
 
 import logging
+import re
 
 import numpy as np
 from PIL import Image
@@ -49,18 +50,42 @@ class OCRService:
                 "PaddleOCR unavailable. Install 'paddleocr' and 'paddlepaddle'."
             ) from exc
 
-        logger.info("Initialising PaddleOCR (lang=%s, angle_cls=%s)...",
-                    settings.OCR_LANG, settings.USE_ANGLE_CLS)
-        self._engine = PaddleOCR(
-            use_angle_cls=settings.USE_ANGLE_CLS,
-            lang=settings.OCR_LANG,
-            show_log=False,
-            det_db_thresh=settings.OCR_DET_DB_THRESH,
-            det_db_box_thresh=settings.OCR_DET_DB_BOX_THRESH,
-            det_db_unclip_ratio=settings.OCR_DET_DB_UNCLIP_RATIO,
+        logger.info(
+            "Initialising PaddleOCR (lang=%s, angle_cls=%s)...",
+            settings.OCR_LANG,
+            settings.USE_ANGLE_CLS,
         )
+        self._engine = self._create_engine(PaddleOCR)
         self.ready = True
         logger.info("PaddleOCR ready.")
+
+    def _create_engine(self, paddle_ocr_cls):
+        """Create a PaddleOCR instance while tolerating version-specific kwargs."""
+        kwargs = {
+            "use_angle_cls": settings.USE_ANGLE_CLS,
+            "lang": settings.OCR_LANG,
+            "show_log": False,
+            "det_db_thresh": settings.OCR_DET_DB_THRESH,
+            "det_db_box_thresh": settings.OCR_DET_DB_BOX_THRESH,
+            "det_db_unclip_ratio": settings.OCR_DET_DB_UNCLIP_RATIO,
+        }
+        required_kwargs = {"use_angle_cls", "lang"}
+
+        while True:
+            try:
+                return paddle_ocr_cls(**kwargs)
+            except Exception as exc:  # noqa: BLE001
+                match = re.search(r"Unknown argument:\s*(\w+)", str(exc))
+                if match:
+                    arg_name = match.group(1)
+                    if arg_name in kwargs and arg_name not in required_kwargs:
+                        logger.warning(
+                            "PaddleOCR does not support argument '%s'; retrying without it.",
+                            arg_name,
+                        )
+                        kwargs.pop(arg_name, None)
+                        continue
+                raise
 
     # ---- detection --------------------------------------------------------
     def detect(self, image: Image.Image) -> list[dict]:

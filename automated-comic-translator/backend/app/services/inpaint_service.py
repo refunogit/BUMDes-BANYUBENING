@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import logging
 
-import cv2
 import numpy as np
 from PIL import Image
 
@@ -67,7 +66,7 @@ class InpaintService:
             y1 = min(h, y1)
             if x1 <= x0 or y1 <= y0:
                 continue
-            cv2.rectangle(mask, (x0, y0), (x1, y1), 255, thickness=-1)
+            mask[y0:y1, x0:x1] = 255
         return mask
 
     @staticmethod
@@ -76,6 +75,12 @@ class InpaintService:
         k = kernel_size or settings.MASK_DILATION
         if k <= 0:
             return mask
+        try:
+            import cv2
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError(
+                "OpenCV is unavailable. Install backend dependencies before using inpainting."
+            ) from exc
         kernel = np.ones((k * 2 + 1, k * 2 + 1), np.uint8)
         return cv2.dilate(mask, kernel, iterations=1)
 
@@ -85,7 +90,6 @@ class InpaintService:
         if not detections:
             return image.convert("RGB")
 
-        self.init()
         rgb = image.convert("RGB")
         mask = self.build_mask(rgb.size, detections)
         mask = self.dilate_mask(mask)
@@ -93,11 +97,30 @@ class InpaintService:
         if mask.sum() == 0:
             return rgb
 
-        # simple_lama expects a grayscale uint8 mask of identical size.
-        mask_pil = Image.fromarray(mask, mode="L")
-        logger.info("Inpainting %d region(s) with LaMa...", len(detections))
-        result = self._lama(rgb, mask_pil)
-        return result.convert("RGB")
+        try:
+            self.init()
+            # simple_lama expects a grayscale uint8 mask of identical size.
+            mask_pil = Image.fromarray(mask, mode="L")
+            logger.info("Inpainting %d region(s) with LaMa...", len(detections))
+            result = self._lama(rgb, mask_pil)
+            return result.convert("RGB")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Falling back to OpenCV inpaint: %s", exc)
+            return self._opencv_inpaint(rgb, mask)
+
+    @staticmethod
+    def _opencv_inpaint(image: Image.Image, mask: np.ndarray) -> Image.Image:
+        """Fallback inpainting using OpenCV when LaMa is unavailable."""
+        try:
+            import cv2
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError(
+                "OpenCV is unavailable. Install backend dependencies before using inpainting."
+            ) from exc
+
+        bgr = np.asarray(image, dtype=np.uint8)[:, :, ::-1].copy()
+        repaired = cv2.inpaint(bgr, mask, 3, cv2.INPAINT_TELEA)
+        return Image.fromarray(repaired[:, :, ::-1].copy())
 
 
 def _resolve_torch_device(device: str):

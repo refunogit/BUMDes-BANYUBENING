@@ -42,6 +42,14 @@ export type TranslateResult =
   | { ok: true; data: TranslateResponse }
   | { ok: false; error: string };
 
+export interface CaptureArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  devicePixelRatio: number;
+}
+
 export type FetchImageResult =
   | { ok: true; dataUrl: string }
   | { ok: false; error: string };
@@ -68,11 +76,20 @@ export async function translateImage(
 /** Ask the service worker to fetch a cross-origin image as a data URL. */
 export async function fetchImageAsDataUrl(
   imageUrl: string,
-  timeoutMs = 30_000,
+  options: {
+    pageUrl?: string;
+    captureArea?: CaptureArea;
+    timeoutMs?: number;
+  } = {},
 ): Promise<FetchImageResult> {
   return sendWithTimeout<FetchImageResult>(
-    { type: "FETCH_IMAGE", url: imageUrl },
-    timeoutMs,
+    {
+      type: "FETCH_IMAGE",
+      url: imageUrl,
+      pageUrl: options.pageUrl,
+      captureArea: options.captureArea,
+    },
+    options.timeoutMs ?? 30_000,
   );
 }
 

@@ -11,6 +11,7 @@
  *  - All listeners are registered at the top level of this script.
  */
 
+import type { CaptureArea } from "../utils/api";
 import { API_BASE_URL } from "../utils/api";
 
 // ---------------------------------------------------------------------------
@@ -18,13 +19,99 @@ import { API_BASE_URL } from "../utils/api";
 // ---------------------------------------------------------------------------
 
 /** Fetch a remote image (from any domain in host_permissions) as a data URL. */
-async function fetchImageAsDataUrl(imageUrl: string): Promise<string> {
-  const response = await fetch(imageUrl, { credentials: "omit" });
+async function fetchImageAsDataUrl(
+  imageUrl: string,
+  options: {
+    pageUrl?: string;
+    captureArea?: CaptureArea;
+    windowId?: number;
+  } = {},
+): Promise<string> {
+  if (imageUrl.startsWith("data:image/")) {
+    return imageUrl;
+  }
+  if (imageUrl.startsWith("data:")) {
+    throw new Error("Selected resource is a data URL but not an image");
+  }
+
+  let lastError: unknown;
+  for (const credentials of ["include", "omit"] as const) {
+    try {
+      return await fetchImageOverNetwork(imageUrl, {
+        credentials,
+        pageUrl: options.pageUrl,
+      });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (options.captureArea && typeof options.windowId === "number") {
+    try {
+      return await captureVisibleImageArea(options.windowId, options.captureArea);
+    } catch (captureError) {
+      const detail = captureError instanceof Error ? captureError.message : String(captureError);
+      throw new Error(`Image fetch failed and screenshot fallback also failed: ${detail}`);
+    }
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+  throw new Error("Image fetch failed");
+}
+
+async function fetchImageOverNetwork(
+  imageUrl: string,
+  options: {
+    credentials: RequestCredentials;
+    pageUrl?: string;
+  },
+): Promise<string> {
+  const response = await fetch(imageUrl, {
+    credentials: options.credentials,
+    referrer: options.pageUrl,
+  });
   if (!response.ok) {
     throw new Error(`Image fetch failed: HTTP ${response.status}`);
   }
+
+  const contentType = (response.headers.get("content-type") || "").toLowerCase();
+  if (contentType && !contentType.startsWith("image/")) {
+    throw new Error(`Fetched resource is not an image (content-type: ${contentType})`);
+  }
+
   const blob = await response.blob();
+  if (blob.type && !blob.type.toLowerCase().startsWith("image/")) {
+    throw new Error(`Fetched blob is not an image (type: ${blob.type})`);
+  }
   return blobToDataUrl(blob);
+}
+
+async function captureVisibleImageArea(windowId: number, area: CaptureArea): Promise<string> {
+  const screenshotUrl = await chrome.tabs.captureVisibleTab(windowId, { format: "png" });
+  const screenshotBlob = await (await fetch(screenshotUrl)).blob();
+  const screenshotBitmap = await createImageBitmap(screenshotBlob);
+
+  const scale = area.devicePixelRatio || 1;
+  const sx = Math.max(0, Math.round(area.x * scale));
+  const sy = Math.max(0, Math.round(area.y * scale));
+  const maxWidth = Math.max(1, screenshotBitmap.width - sx);
+  const maxHeight = Math.max(1, screenshotBitmap.height - sy);
+  const sw = Math.max(1, Math.min(Math.round(area.width * scale), maxWidth));
+  const sh = Math.max(1, Math.min(Math.round(area.height * scale), maxHeight));
+
+  const canvas = new OffscreenCanvas(sw, sh);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    screenshotBitmap.close();
+    throw new Error("OffscreenCanvas 2D context unavailable");
+  }
+
+  ctx.drawImage(screenshotBitmap, sx, sy, sw, sh, 0, 0, sw, sh);
+  screenshotBitmap.close();
+  const croppedBlob = await canvas.convertToBlob({ type: "image/png" });
+  return blobToDataUrl(croppedBlob);
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -79,17 +166,21 @@ async function translateRequest(payload: {
 // Message router
 // ---------------------------------------------------------------------------
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message.type !== "string") {
     return false;
   }
 
   // -- Fetch a cross-origin image -------------------------------------------
   if (message.type === "FETCH_IMAGE") {
-    fetchImageAsDataUrl(message.url)
+    fetchImageAsDataUrl(message.url, {
+      pageUrl: message.pageUrl || sender.tab?.url,
+      captureArea: message.captureArea,
+      windowId: sender.tab?.windowId,
+    })
       .then((dataUrl) => sendResponse({ ok: true, dataUrl }))
       .catch((err: unknown) =>
-        sendResponse({ ok: false, error: String(err) }),
+        sendResponse({ ok: false, error: err instanceof Error ? err.message : String(err) }),
       );
     return true; // keep channel open for async response
   }

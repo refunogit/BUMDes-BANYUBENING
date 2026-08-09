@@ -9,6 +9,7 @@
  *   4. replaces the <img src> with the returned translated data URL.
  */
 
+import type { CaptureArea } from "../utils/api";
 import { fetchImageAsDataUrl, translateImage } from "../utils/api";
 
 // ---------------------------------------------------------------------------
@@ -111,8 +112,7 @@ class ComicOverlay {
     this.setLoading(true, "Grabbing image…");
 
     try {
-      // 1. Grab the image without tainting a canvas.
-      const grabbed = await fetchImageAsDataUrl(this.img.currentSrc || this.img.src);
+      const grabbed = await this.grabImageDataUrl();
       if (!grabbed.ok) throw new Error(grabbed.error);
 
       this.setLoading(true, "Translating…");
@@ -139,11 +139,92 @@ class ComicOverlay {
       }, 5000);
     }
   }
+
+  private async grabImageDataUrl() {
+    const src = this.img.currentSrc || this.img.src;
+    if (!src) {
+      return { ok: false as const, error: "Image source is empty" };
+    }
+
+    const direct = await imageElementToDataUrl(this.img);
+    if (direct) {
+      return { ok: true as const, dataUrl: direct };
+    }
+
+    return this.withOverlayHidden(async () =>
+      fetchImageAsDataUrl(src, {
+        pageUrl: window.location.href,
+        captureArea: this.getCaptureArea(),
+      }),
+    );
+  }
+
+  private getCaptureArea(): CaptureArea | undefined {
+    const rect = this.img.getBoundingClientRect();
+    const fullyVisible =
+      rect.left >= 0 &&
+      rect.top >= 0 &&
+      rect.right <= window.innerWidth &&
+      rect.bottom <= window.innerHeight;
+    const fitsViewport = rect.width <= window.innerWidth && rect.height <= window.innerHeight;
+
+    if (!fullyVisible || !fitsViewport) {
+      return undefined;
+    }
+
+    return {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+      devicePixelRatio: window.devicePixelRatio || 1,
+    };
+  }
+
+  private async withOverlayHidden<T>(task: () => Promise<T>): Promise<T> {
+    const previousVisibility = this.root.style.visibility;
+    this.root.style.visibility = "hidden";
+    await nextFrame();
+    await nextFrame();
+    try {
+      return await task();
+    } finally {
+      this.root.style.visibility = previousVisibility;
+      this.position();
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Image scanning
 // ---------------------------------------------------------------------------
+async function imageElementToDataUrl(img: HTMLImageElement): Promise<string | null> {
+  try {
+    await img.decode().catch(() => undefined);
+    const width = img.naturalWidth || img.width;
+    const height = img.naturalHeight || img.height;
+    if (width <= 0 || height <= 0) {
+      return null;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return null;
+    }
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+}
+
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 function isComicImage(img: HTMLImageElement): boolean {
   if (!img.isConnected || img.getAttribute("data-act") === "1") return false;
   const w = img.naturalWidth || img.width;

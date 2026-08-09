@@ -19,6 +19,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/backend"
 EXTENSION_DIR="$SCRIPT_DIR/extension"
+CHECK_PY="$SCRIPT_DIR/scripts/check_python.py"
 
 MODE="run"          # run | watch | build-only
 case "${1:-}" in
@@ -38,6 +39,10 @@ if [ ! -d "$EXTENSION_DIR/node_modules" ]; then
 fi
 if [ ! -x "$BACKEND_DIR/.venv/bin/uvicorn" ]; then
   echo "ERROR: backend not installed. Run ./install.sh first." >&2
+  exit 1
+fi
+if ! "$BACKEND_DIR/.venv/bin/python" "$CHECK_PY" >/dev/null; then
+  echo "ERROR: backend/.venv uses an unsupported Python version. Re-run ./install.sh." >&2
   exit 1
 fi
 
@@ -80,5 +85,4 @@ echo "   API docs:  http://localhost:$PORT/docs"
 echo "   Health:    http://localhost:$PORT/health"
 echo
 cd "$BACKEND_DIR"
-source .venv/bin/activate
-exec uvicorn app.main:app --host "$HOST" --port "$PORT"
+exec "$BACKEND_DIR/.venv/bin/python" -m uvicorn app.main:app --host "$HOST" --port "$PORT"

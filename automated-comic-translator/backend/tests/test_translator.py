@@ -21,6 +21,18 @@ def test_batch_translation_joins_and_splits(mock_translate):
 
 
 @patch("app.services.translator_service._translate_single")
+def test_batch_translation_handles_escaped_env_delimiter(mock_translate):
+    mock_translate.return_value = "satu\n-----\ndua"
+
+    with patch.object(translator_service.settings, "BATCH_DELIMITER", "\\n-----\\n"):
+        result = translator_service.translate_batch(
+            ["one", "two"], target="id", source="auto"
+        )
+
+    assert result == ["satu", "dua"]
+
+
+@patch("app.services.translator_service._translate_single")
 def test_failover_switches_provider(mock_translate):
     # Google fails (rate limit), MyMemory (2nd provider) succeeds.
     def fake(text, source, target, provider):

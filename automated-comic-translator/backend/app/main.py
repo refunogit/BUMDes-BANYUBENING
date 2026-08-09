@@ -153,7 +153,7 @@ def translate(req: TranslateRequest) -> TranslateResponse:
     detections = ocr_service.detect(image)
     if not detections:
         # Nothing to translate: return the (possibly downscaled) original.
-        return _finish(image, [], [], start, original_size)
+        return _finish(image, [], [], start, image.size)
 
     # 2. Translation ----------------------------------------------------------
     target = req.target_lang or settings.DEFAULT_TARGET_LANG

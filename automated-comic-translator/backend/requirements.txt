@@ -1,6 +1,7 @@
 # =============================================================================
 # Automated Comic Translator - Backend dependencies
 # Install with:  pip install -r requirements.txt
+# Supported Python: CPython 3.10-3.13 64-bit (recommended: 3.11 x64)
 # =============================================================================
 
 # --- Web framework -----------------------------------------------------------
@@ -30,7 +31,7 @@ paddleocr>=2.7.3
 # Pulls in torch automatically. Prefer the CPU build for lightweight setups:
 #   pip install torch --index-url https://download.pytorch.org/whl/cpu
 # ONNX (quantized, faster on CPU) alternative - uncomment to use:
-# simple-lama-inpainting  (PyTorch backend, default)
+simple-lama-inpainting     # PyTorch backend, default LaMa implementation
 # onnxruntime>=1.18        (optional ONNX execution provider)
 
 # --- Translation --------------------------------------------------------------
