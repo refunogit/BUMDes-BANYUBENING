@@ -88,7 +88,7 @@ src/
   data/database/            # skema & helper SQLite
   data/repositories/        # satu-satunya akses SQL
   store/                    # Zustand (auth, cart, printer, tema, banner, register)
-  shared/components/        # 30 komponen UI
+  shared/components/        # 31 komponen UI
   features/                 # dashboard, kasir, printer, laporan, invoice, notifikasi, auth
 assets/
   icon/                     # 48 ikon PNG 512×512 (flat line)
