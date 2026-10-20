@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "KASIRKU",
+    "slug": "kasirku-bumdes",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/iconaplikasi.png",
+    "scheme": "kasirku",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "description": "KASIRKU — kasir digital offline untuk BUMDes: penjualan, stok, piutang, hutang, laporan keuangan, struk thermal, dan backup lokal.",
+    "splash": {
+      "image": "./assets/iconaplikasi.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0C3B6E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bumdes.pos",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Kamera digunakan untuk memindai barcode produk dan QRIS.",
+        "NSBluetoothAlwaysUsageDescription": "Bluetooth digunakan untuk menghubungkan printer struk thermal.",
+        "NSPhotoLibraryUsageDescription": "Galeri digunakan untuk mengunggah logo toko dan foto produk."
+      }
+    },
+    "android": {
+      "package": "com.bumdes.pos",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/iconaplikasi.png",
+        "backgroundColor": "#0C3B6E"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0C3B6E",
+          "image": "./assets/iconaplikasi.png",
+          "imageWidth": 152
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Galeri digunakan untuk mengunggah logo toko dan foto produk."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2F86D1"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
